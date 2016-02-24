@@ -15,6 +15,13 @@ except:
  #            ksi * A0**2 * (parr[0]**2+parr[1]**2) * \
   #           np.cos(3.0*np.arccos(parr[0]/np.sqrt(parr[1]**2 + parr[0]**2)))
 
+def energy(parr, vF, A0, ksi, ksi0 = 0, delta=0):
+    return np.sqrt(delta**2 + A0**2 * np.sqrt(parr[0]**2+parr[1]**2)**2 *\
+                (vF**2 +\
+                ksi**2 * A0**2 * (parr[0]**2+parr[1]**2) -\
+                2.0 *  ksi * vF * A0 * np.sqrt(parr[0]**2+parr[1]**2) *\
+                    np.cos(3.0*np.arccos(parr[0]/np.sqrt(parr[1]**2 + parr[0]**2)))))
+
 
 def intraband_current(p0, A, tarr, delta=0.0):
     return np.array([-(p0[0]+A(t)[0])/np.sqrt((p0[0]+A(t)[0])**2 +
@@ -135,6 +142,21 @@ def state_up0_war(p0, vF, ksi=0.0):
                                (vF*np.exp(1.j*phase) - ksi * pe * np.exp(-2.j*phase))),1.0])
     return phi0u
 
+# Have to be corrected: WRONG!
+#def state_down0_war_gap(p0, vF=vf, ksi=0.0, delta=0.0):
+#    phase = np.arccos((p0[0])/np.sqrt((p0[0])**2+(p0[1])**2))  #np.arctan(p0[1]/p0[0])
+#   if p0[1] < 0:
+#        phase *= -1.0 
+#    pe = np.sqrt(p0[0]**2 + p0[1]**2)
+#    norm = (delta - np.sqrt(delta**2 + pe**2 * (vF*np.exp(-1.j*phase) - ksi * pe * np.exp(2.j*phase))*\
+#                                      (vF*np.exp(1.j*phase) - ksi * pe * np.exp(-2.j*phase))))/\
+#            np.sqrt((vF*pe*np.exp(-1.j*phase) - ksi * pe**2 * np.exp(2.j*phase))*\
+#                    (vF*pe*np.exp(1.j*phase) - ksi * pe**2 * np.exp(-2.j*phase)))
+#    phi0m = norm *\
+#            np.array([(vF*pe*np.exp(-1.j*phase) - ksi * pe**2 * np.exp(2.j*phase))/ \
+#                               (delta - np.sqrt(delta**2 + pe**2 * (vF*np.exp(-1.j*phase) - ksi * pe * np.exp(2.j*phase))*\
+#                                      (vF*np.exp(1.j*phase) - ksi * pe * np.exp(-2.j*phase)))),1.0])
+#    return phi0m
 
 
 def get_Omega(p0, tarr, A):
