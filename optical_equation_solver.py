@@ -1,8 +1,6 @@
 from scipy.integrate import ode
 import numpy as np
 from math import *
-import cmath
-from random import randrange, uniform
 import utilites
 
 class OpticalSolver:
