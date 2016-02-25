@@ -49,7 +49,6 @@ class DiracSolver:
 
         self.phase_old = 0.0
         self.told = 0.0
-
         r = ode(self.f).set_integrator('zvode', method='bdf', order=2)
         r.set_initial_value(phi0, t0).set_f_params(p0, delta, ksi, ksi0).set_jac_params(p0)
         phi = []
