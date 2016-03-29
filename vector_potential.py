@@ -10,10 +10,11 @@ except:
 
 class VectorPotential:
 
-    def __init__(self):
+    def __init__(self, frequency=None, amplitude_E0=None, direction=[1.0,0.0], polarization=0.0):
         self.frequency = None
         self.amplitude = None
-        self.pulse_duration = None
+        self.direction = np.array(direction)/np.sqrt(direction[0]**2+direction[1]**2)
+        self.polarization = polarization
 
     def __envelope(self, t):
         pass
@@ -151,11 +152,12 @@ class VectorPotentialWave(VectorPotential):
         """
         amplitude_E0: is a maximum field strength
         """
-        self.amplitude= amplitude_E0
-        self.frequency = frequency
-        norm = np.sqrt(direction[0]**2+direction[1]**2)
-        self.polarization = polarization
-        self.direction = np.array(direction)/norm
+        super(SinSqEnvelopePulse, self).__init__()
+        #self.amplitude= amplitude_E0
+        #self.frequency = frequency
+        #norm = np.sqrt(direction[0]**2+direction[1]**2)
+        #self.polarization = polarization
+        #self.direction = np.array(direction)/norm
 
     def __call__(self, t):
         VecPot_x = self.amplitude / self.frequency / np.sqrt(2.) * np.sin(self.frequency * t)
@@ -172,11 +174,12 @@ class FlatTopPulse(VectorPotential):
         """
         amplitude_E0: is the maximum field strength
         """
-        self.amplitude = amplitude_E0
-        self.frequency = frequency
-        norm = np.sqrt(direction[0]**2+direction[1]**2)
-        self.direction = np.array(direction)/norm
-        self.polarization=polarization
+        super(SinSqEnvelopePulse, self).__init__()
+        #self.amplitude = amplitude_E0
+        #self.frequency = frequency
+        #norm = np.sqrt(direction[0]**2+direction[1]**2)
+        #self.direction = np.array(direction)/norm
+        #self.polarization=polarization
 
         if Tramp is None:
            self.Tramp = np.pi/self.frequency
@@ -224,14 +227,15 @@ class SinSqEnvelopePulse(VectorPotential):
 
         Nc: number of cycles
         """
-        self.amplitude= amplitude_E0
-        self.frequency = frequency
+        #self.amplitude= amplitude_E0
+        #self.frequency = frequency
+        super(SinSqEnvelopePulse, self).__init__()
         self.Nc = Nc
         self.pulse_duration = 2. * self.Nc * np.pi / self.frequency
-        norm = np.sqrt(direction[0]**2 + direction[1]**2)
-        self.direction = np.array(direction) / norm
+        #norm = np.sqrt(direction[0]**2 + direction[1]**2)
+        #self.direction = np.array(direction) / norm
         self.CEP = cep
-        self.polarization=polarization
+        #self.polarization=polarization
 
     def envelope(self, t):
 
@@ -256,7 +260,8 @@ class SinSqEnvelopePulse(VectorPotential):
 
 class GaussianEnvelopePulse(VectorPotential):
 
-    def __init__(self, amplitude_E0, frequency, t0=None, tc=None, Nc=1, cep=0.0, direction=[1.0,0.0], polarization=0.0):
+    def __init__(self, amplitude_E0, frequency, t0=None, tc=None, Nc=1,
+                     cep=0.0, direction=[1.0,0.0], polarization=0.0):
 
         """
         This class contains vector potential of a laser field
@@ -272,9 +277,10 @@ class GaussianEnvelopePulse(VectorPotential):
         tc: center of the Gaussian
         tc = 1.8 * (np.pi * Nc / self.frequency)
         """
+        super(SinSqEnvelopePulse, self).__init__()
 
-        self.amplitude= amplitude_E0
-        self.frequency = frequency
+        #self.amplitude= amplitude_E0
+        #self.frequency = frequency
         self.pulse_duration = 2. * Nc * np.pi / self.frequency
         if t0 is None:
             self.t0 = np.pi / 2.0 * Nc / self.frequency
@@ -284,13 +290,13 @@ class GaussianEnvelopePulse(VectorPotential):
             self.tc = 1.2 * np.pi * Nc / self.frequency
         else:
             self.tc = tc
-        norm = np.sqrt(direction[0]**2 + direction[1]**2)
-        self.direction = np.array(direction) / norm
+        #norm = np.sqrt(direction[0]**2 + direction[1]**2)
+        #self.direction = np.array(direction) / norm
         self.CEP = cep
-        self.polarization=polarization
+        #self.polarization=polarization
 
     def envelope(self, t):
-        return math.exp(-((t-self.tc)/self.t0)**2/0.7213)
+        return np.exp(-((t-self.tc)/self.t0)**2/0.7213)
 
     def __call__(self, t):
         env = self.envelope(t)
@@ -316,14 +322,15 @@ class CustomEnvelopePulse(VectorPotential):
 
         frequency: pulse frequency
         """
+        super(SinSqEnvelopePulse, self).__init__()
 
-        self.amplitude= amplitude_E0
-        self.frequency = frequency
+        #self.amplitude= amplitude_E0
+        #self.frequency = frequency
         self.pulse_duration = 2. * Nc * np.pi / self.frequency
-        norm = np.sqrt(direction[0]**2 + direction[1]**2)
-        self.direction = np.array(direction) / norm
+        #norm = np.sqrt(direction[0]**2 + direction[1]**2)
+        #self.direction = np.array(direction) / norm
         self.CEP = cep
-        self.polarization=polarization
+        #self.polarization=polarization
         self.envelope = envelope
 
     def __call__(self, t):
@@ -350,9 +357,10 @@ class PulseFromFile(VectorPotential):
 
         frequency: pulse frequency
         """
+        super(SinSqEnvelopePulse, self).__init__()
 
-        self.amplitude= amplitude_E0
-        self.frequency = frequency
+        #self.amplitude= amplitude_E0
+        #self.frequency = frequency
         self.pulse_duration = 2. * Nc * np.pi / self.frequency
         data = np.load(file_name)
         self.tarr = data[:,0]

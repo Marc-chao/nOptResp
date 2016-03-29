@@ -22,14 +22,15 @@ class OpticalSolver:
         jy = []
         n = -np.abs(self.vec[:,0])**2 + np.abs(self.vec[:,1])**2
         rho = self.vec[:,2]
-        A_data = np.array([self.A(t)[0] for t in self.tarr])
+        A_data_x = np.array([self.A(t)[0] for t in self.tarr])
+        A_data_y = np.array([self.A(t)[1] for t in self.tarr])
         omega = utilites.get_Omega(p0=p0,tarr=self.tarr, A=self.A)/self.prefactor
         #for i in xrange(len(c)):
-        self.jx = n*(A_data+p0[0])/np.sqrt((p0[0]+A_data)**2+p0[1]**2) \
-                                        +(1.j*p0[1]/np.sqrt((p0[0]+A_data)**2+p0[1]**2)*\
+        self.jx = n*(A_data_x+p0[0])/np.sqrt((p0[0]+A_data_x)**2+(p0[1]+A_data_y)**2) \
+                                        +(1.j*(p0[1]+A_data_y)/np.sqrt((p0[0]+A_data_x)**2+(p0[1]+A_data_y)**2)*\
                                         (rho*np.exp(-2.j*omega) - np.conjugate(rho)*np.exp(2.j*omega)))
-        self.jy =n*(A_data+p0[0])/np.sqrt((p0[0]+A_data)**2+p0[1]**2) \
-                                        +(1.j*(p0[0]+A_data)/np.sqrt((p0[0]+A_data)**2+p0[1]**2)*\
+        self.jy =n*(p0[1]+A_data_y)/np.sqrt((p0[0]+A_data_x)**2+(p0[1]+A_data_y)**2) \
+                                        -(1.j*(p0[0]+A_data_x)/np.sqrt((p0[0]+A_data_x)**2+(p0[1]+A_data_y)**2)*\
                                         (rho*np.exp(-2.j*omega) - np.conjugate(rho)*np.exp(2.j*omega)))
         return None
 
