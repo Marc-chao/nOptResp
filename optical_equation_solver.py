@@ -3,6 +3,7 @@ import numpy as np
 from math import *
 import utilites
 
+
 class OpticalSolver:
 
     def __init__(self, A, prefactor=9.46*10**(-3), tdamp = 10**8):
