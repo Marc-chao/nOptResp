@@ -8,11 +8,11 @@ except:
     pass
 #light_speed = 3 * 10**(8)
 
-class VectorPotential:
+class VectorPotential(object):
 
     def __init__(self, frequency=None, amplitude_E0=None, direction=[1.0,0.0], polarization=0.0):
-        self.frequency = None
-        self.amplitude = None
+        self.frequency = frequency
+        self.amplitude = amplitude_E0
         self.direction = np.array(direction)/np.sqrt(direction[0]**2+direction[1]**2)
         self.polarization = polarization
 
@@ -20,7 +20,7 @@ class VectorPotential:
         pass
 
     def get_electric_field(self, t):
-        
+
         dt = 0.01 * 10**(-2)
         return [-(self(t + dt)[0] - self(1.*t)[0]) / dt, -(self(t + dt)[1] - self(1.*t)[1]) / dt]
 
@@ -152,7 +152,8 @@ class VectorPotentialWave(VectorPotential):
         """
         amplitude_E0: is a maximum field strength
         """
-        super(SinSqEnvelopePulse, self).__init__()
+        super(VectorPotentialWave, self).__init__(frequency, amplitude_E0,
+                                                  direction, polarization)
         #self.amplitude= amplitude_E0
         #self.frequency = frequency
         #norm = np.sqrt(direction[0]**2+direction[1]**2)
@@ -174,7 +175,9 @@ class FlatTopPulse(VectorPotential):
         """
         amplitude_E0: is the maximum field strength
         """
-        super(SinSqEnvelopePulse, self).__init__()
+        super(FlatTopPulse, self).__init__(frequency, amplitude_E0,
+                                           direction, polarization)
+
         #self.amplitude = amplitude_E0
         #self.frequency = frequency
         #norm = np.sqrt(direction[0]**2+direction[1]**2)
@@ -196,7 +199,7 @@ class FlatTopPulse(VectorPotential):
 
             return t / self.Tramp
         elif t > self.pulse_duration + self.Tramp:
-            return 2 + (self.pulse_duration - t) / self.Tramp 
+            return 2 + (self.pulse_duration - t) / self.Tramp
         else:
             return 1.0
 
@@ -229,7 +232,9 @@ class SinSqEnvelopePulse(VectorPotential):
         """
         #self.amplitude= amplitude_E0
         #self.frequency = frequency
-        super(SinSqEnvelopePulse, self).__init__()
+        super(SinSqEnvelopePulse, self).__init__(frequency, amplitude_E0,
+                                                 direction, polarization)
+
         self.Nc = Nc
         self.pulse_duration = 2. * self.Nc * np.pi / self.frequency
         #norm = np.sqrt(direction[0]**2 + direction[1]**2)
@@ -277,10 +282,10 @@ class GaussianEnvelopePulse(VectorPotential):
         tc: center of the Gaussian
         tc = 1.8 * (np.pi * Nc / self.frequency)
         """
-        super(SinSqEnvelopePulse, self).__init__()
+        super(GaussianEnvelopePulse, self).__init__(frequency, amplitude_E0,
+                                                    direction, polarization)
 
-        #self.amplitude= amplitude_E0
-        #self.frequency = frequency
+        print frequency, self.frequency, Nc
         self.pulse_duration = 2. * Nc * np.pi / self.frequency
         if t0 is None:
             self.t0 = np.pi / 2.0 * Nc / self.frequency
@@ -322,7 +327,8 @@ class CustomEnvelopePulse(VectorPotential):
 
         frequency: pulse frequency
         """
-        super(SinSqEnvelopePulse, self).__init__()
+        super(CustomEnvelopePulse, self).__init__(frequency, amplitude_E0,
+                                                   direction, polarization)
 
         #self.amplitude= amplitude_E0
         #self.frequency = frequency
@@ -347,7 +353,7 @@ class CustomEnvelopePulse(VectorPotential):
 
 class PulseFromFile(VectorPotential):
 
-    def __init__(self, amplitude_E0, frequency, file_name, time_step=10**(-12)):
+    def __init__(self, amplitude_E0, frequency, file_name, tmax, tcut=None):
 
         """
         This class contains vector potential of a laser field
@@ -357,27 +363,42 @@ class PulseFromFile(VectorPotential):
 
         frequency: pulse frequency
         """
-        super(SinSqEnvelopePulse, self).__init__()
+        super(PulseFromFile, self).__init__(frequency, amplitude_E0)
 
         #self.amplitude= amplitude_E0
         #self.frequency = frequency
-        self.pulse_duration = 2. * Nc * np.pi / self.frequency
-        data = np.load(file_name)
-        self.tarr = data[:,0]
-        self.Ex = data[:,1]
-        try:
-            self.Ey = data[:,2]
-        except:
-            self.Ey = np.zeros(len(data[:,0]))
+        with open(file_name) as f:
+            data = f.read()
+            data = [float(entry) for entry in data.split('\n')[:-1]]
+        self.data = np.array(data[::2])
+        self.tarr = np.linspace(0, tmax, len(data))
+        self.dt = self.tarr[1] - self.tarr[0]
+        if tcut:
+            ind = np.where(self.tarr >= tcut)[0]
+            if ind.any():
+                self.tarr = self.tarr[:ind[0]]
+                self.data = self.data[:ind[0]]
 
     def __call__(self, t):
-        
-        VecPot_x = -self.amplitude / self.frequency / np.sqrt(2) *\
-                 math.sin(self.frequency * t + self.CEP) * env
-        VecPot_y = -self.amplitude / self.frequency / np.sqrt(2) *\
-                 math.sin(self.frequency * t + self.CEP + self.polarization) * env
-        VecPot_x1 = np.sqrt(2.)/2.*(VecPot_x+VecPot_y)
-        VecPot_y1 = np.sqrt(2.)/2.*(VecPot_x-VecPot_y)
-        return [self.direction[0] * VecPot_x1 - self.direction[1] * VecPot_y1,  self.direction[1] * VecPot_x1 + self.direction[0] * VecPot_y1]
 
-# end class CustomEnvelopePulse
+        #ind = np.where(self.tarr >= t)[0]
+        ind = int(t / self.dt)
+        #if ind.any():
+            #print "any", ind[:2], t
+        #    ind = ind[0]
+        #else:
+            #print "no ind", t
+            #return [self.data[-1], 0.0]
+        if ind == 0:
+           return [self.data[0], 0.0]
+        elif ind >= len(self.tarr):
+            return [self.data[-1], 0.0]
+
+        #if self.tarr[ind] == t:
+           #print "equal", selt.tarr[ind], t
+        #   return [self.tarr[ind], 0.0]
+        #print "last"
+        return [self.data[ind-1] + \
+               (self.data[ind]-self.data[ind-1])/(self.tarr[ind]-self.tarr[ind-1])*(t-self.tarr[ind-1]),
+                0.0]
+# end class PulseFromFile
