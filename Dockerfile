@@ -1,10 +1,8 @@
-FROM python:2.7.11
+FROM python:2.7
 
-RUN mkdir -p /usr/src/app 
+WORKDIR /nOptResp
 
-COPY requirements.txt /usr/src/app/
-RUN pip install -r /usr/src/app/requirements.txt
+RUN pip install -r requirements.txt
 
-COPY . /usr/src/app/
-
-CMD ["python", "/usr/src/app/example.py"]
+CMD python -m unittest discover tests
+CMD python exec/solve_E0dep.py
