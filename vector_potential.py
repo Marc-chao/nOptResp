@@ -381,23 +381,12 @@ class PulseFromFile(VectorPotential):
 
     def __call__(self, t):
 
-        #ind = np.where(self.tarr >= t)[0]
         ind = int(t / self.dt)
-        #if ind.any():
-            #print "any", ind[:2], t
-        #    ind = ind[0]
-        #else:
-            #print "no ind", t
-            #return [self.data[-1], 0.0]
         if ind == 0:
            return [self.data[0], 0.0]
         elif ind >= len(self.tarr):
             return [self.data[-1], 0.0]
 
-        #if self.tarr[ind] == t:
-           #print "equal", selt.tarr[ind], t
-        #   return [self.tarr[ind], 0.0]
-        #print "last"
         return [self.data[ind-1] + \
                (self.data[ind]-self.data[ind-1])/(self.tarr[ind]-self.tarr[ind-1])*(t-self.tarr[ind-1]),
                 0.0]
